@@ -68,3 +68,7 @@ def ngrams(sentence, order):
         ngram.append(w)
         if len(ngram) == order:
             yield tuple(ngram)
+
+if __name__ == '__main__':
+    for x in ngrams(["a","b","c","d","e","f","g"],5) :
+        print(x)
