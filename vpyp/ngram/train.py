@@ -13,6 +13,8 @@ mh_iter = 100 # number of Metropolis-Hastings sampling iterations
 def run_sampler(model, corpus, n_iter):
     n_sentences = len(corpus)
     n_words = sum(len(sentence) for sentence in corpus)
+
+
     for it in range(n_iter):
         logging.info('Iteration %d/%d', it+1, n_iter)
         for sentence in corpus:

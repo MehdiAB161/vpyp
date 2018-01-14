@@ -17,8 +17,9 @@ from new_functions import sample_multinomial
 def run_sampler(model, corpus, n_iter, n_particles, n_tags):
     n_sentences = len(corpus)
     n_words = sum(len(sentence) for sentence in corpus)
-    weights = [1/len(n_particles) for i in range(n_particles)]
+    weights = [float(1)/n_particles for i in range(n_particles)]
     all_tags = np.arange(n_tags)
+
 
     for it in range(n_iter):
         logging.info('Iteration %d/%d', it+1, n_iter)
@@ -31,14 +32,16 @@ def run_sampler(model, corpus, n_iter, n_particles, n_tags):
                     model.decrement(seq[2:4], seq[4])
 
                 # We compute all the possible sequences by replacing the middle tag
-                possible_sequences = [seq[0:2] + [w] + seq[3:5] for w in all_tags]
+                possible_sequences = [seq[0:2] + (w,) + seq[3:5] for w in all_tags]
 
                 # We compute the proposal distribution
                 proposal_distribution = [model.prob(ctx=seq[0:2], w=seq[2]) * model.prob(ctx=seq[1:3], w=seq[3])
                                          * model.prob(ctx=seq[2:4], w=seq[4]) for seq in possible_sequences]
 
                 # Pick P particles from the proposal distribution
-                particles = sample_multinomial(n_particles, proposal_distribution)
+                temp_proposal_distribution = [proposal_distribution[i]/sum(proposal_distribution) for i in range(len(proposal_distribution))]
+
+                particles = sample_multinomial(n_particles, temp_proposal_distribution)
 
                 # Compute the weights of the sampled particles with the new sampling arrangements (Not sure about this one)
                 alphas = [model.prob(ctx=seq[0:2], w=all_tags[particle]) / proposal_distribution[particle]
@@ -47,11 +50,12 @@ def run_sampler(model, corpus, n_iter, n_particles, n_tags):
                 weights = [weights[i]/sum(weights) for i in range(len(weights))]
 
                 # Resample the particles to obtain P equally weighted particles
-                particles = sample_multinomial(n_particles, weights)
+                particles_indexes = sample_multinomial(n_particles, weights)
+                particles = [particles[particles_indexes[i]] for i in range(len(particles))]
 
                 # Update the seating arrangements for all the particles
                 for particle in particles:
-                    new_seq = seq[0:2] + all_tags[particle] + seq[3:5]
+                    new_seq = seq[0:2] + (all_tags[particle],) + seq[3:5]
 
                     model.increment(new_seq[0:2], new_seq[2])
                     model.increment(new_seq[1:3], new_seq[3])
@@ -74,42 +78,19 @@ def run_sampler(model, corpus, n_iter, n_particles, n_tags):
 
 
 def main():
-    logging.basicConfig(level=logging.INFO, format='%(message)s')
-
-    parser = argparse.ArgumentParser(description='Train n-gram model')
-    parser.add_argument('--train', help='training corpus', required=True)
-    parser.add_argument('--order', help='order of the model', type=int, required=True)
-    parser.add_argument('--iter', help='number of iterations', type=int, required=True)
-    parser.add_argument('--output', help='model output path')
-    parser.add_argument('--P', help='Number of particles')
-    parser.add_argument('--T', help='Number of tags')
-
-    args = parser.parse_args()
-
+    train="../data/Verne.80jours-short.en"
+    order = 3
+    P=20
+    T=17
+    n_iter=100
     vocabulary = Vocabulary()
-
     logging.info('Reading training corpus')
-    with open(args.train) as train:
-        training_corpus = read_corpus(train, vocabulary)
+    training_corpus = read_corpus(train, vocabulary)
+    base = Uniform(len(vocabulary))
+    model = PYPLM(order, base)
+    logging.info('Training model of order %d', order)
+    run_sampler(model, training_corpus, n_iter, n_particles=P, n_tags=T)
 
-    if args.charlm:
-        from ..charlm import CharLM
-        char_lm = CharLM(args.charlm, vocabulary)
-        if args.pyp:
-            base = PYP(char_lm, PYPPrior(1.0, 1.0, 1.0, 1.0, 0.8, 1.0))
-        else:
-            base = char_lm
-    else:
-        base = Uniform(len(vocabulary))
-    model = PYPLM(args.order, base)
-
-    logging.info('Training model of order %d', args.order)
-    run_sampler(model, training_corpus, args.iter, n_particles=args.P, n_tags=args.T)
-
-    if args.output:
-        model.vocabulary = vocabulary
-        with open(args.output, 'w') as f:
-            cPickle.dump(model, f, protocol=-1)
 
 
 if __name__ == '__main__':
