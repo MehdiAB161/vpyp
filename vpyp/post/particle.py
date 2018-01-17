@@ -3,6 +3,7 @@ from corpus import ngrams
 
 from copy import deepcopy
 import numpy as np
+from joblib import Parallel, delayed
 
 
 class Particle:
@@ -77,7 +78,8 @@ class Particle:
 class Particles:
     def __init__(self, n_particles, tag_model, word_model, sentence, n_tags):
         self.particles = [Particle(tag_model, word_model, sentence, n_tags) for _ in range(n_particles)]
-
+        # self.particles = Parallel(n_jobs=4)(delayed(Particle)(tag_model, word_model, sentence, n_tags)
+        #                                     for _ in range(n_particles))
         self.n_particles = n_particles
 
     def sample_particle(self):
