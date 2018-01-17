@@ -3,7 +3,7 @@ import logging
 import math
 import sys
 import cPickle
-from corpus import START, STOP
+from ..corpus import START, STOP
 
 
 def print_arpa(model, vocabulary):
@@ -64,6 +64,7 @@ def print_arpa(model, vocabulary):
         yield '\\end\\'
     sys.stdout.writelines(l.encode('utf8')+'\n' for l in lines())
 
+
 def main():
     logging.basicConfig(level=logging.INFO, format='%(message)s')
 
@@ -87,6 +88,7 @@ def main():
     logging.info('Vocabulary size: %d', len(vocabulary))
 
     print_arpa(model, vocabulary)
+
 
 if __name__ == '__main__':
     main()

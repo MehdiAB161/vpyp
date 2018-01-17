@@ -1,6 +1,8 @@
 from collections import deque
 from itertools import chain, repeat
 
+import numpy as np
+
 START, STOP = 0, 1
 
 class OOV(Exception): pass
@@ -48,8 +50,10 @@ class Vocabulary:
     def __len__(self):
         return len(self.id2word)
 
+
 def read_corpus(stream, vocabulary):
     return [[vocabulary[word] for word in seg.decode('utf8').split()] for seg in stream]
+
 
 class Corpus:
     def __init__(self, stream, vocabulary=None):
@@ -62,9 +66,21 @@ class Corpus:
     def __len__(self):
         return len(self.segments)
 
+    def random_tags(self, n_tags):
+        self.segments = [[(np.random.randint(0, n_tags), word) for word in sentence] for sentence in self.segments]
+
+    def update_tags(self):
+        pass
+
+
 def ngrams(sentence, order):
     ngram = deque(maxlen=order)
     for w in chain(repeat(START, order-1), sentence, (STOP,)):
         ngram.append(w)
         if len(ngram) == order:
             yield tuple(ngram)
+
+
+if __name__ == '__main__':
+    for x in ngrams(["a","b","c","d","e","f","g"],5) :
+        print(x)

@@ -1,6 +1,7 @@
 import math
 import random
 
+
 class CRP(object):
     def __init__(self):
         # {k: [count_k^1, .., count_k^t]}
@@ -39,6 +40,7 @@ class CRP(object):
                 del self.ncustomers[k]
             return True
         return False
+
 
 class PYP(CRP):
     def __init__(self, base, prior):
@@ -127,37 +129,5 @@ class PYP(CRP):
 
     def __repr__(self):
         return ('PYP(d={self.d}, theta={self.theta}, '
-                '#customers={self.total_customers}, #tables={self.ntables}, '
-                '#dishes={V}, Base={self.base})').format(self=self, V=len(self.tables))
-
-class DP(PYP):
-    @property
-    def alpha(self):
-        return self.prior.x
-
-    def _sample_table(self, k):
-        if k not in self.tables: return -1
-        p_new = self.alpha * self.base.prob(k)
-        norm = p_new + self.ncustomers[k]
-        x = random.random() * norm
-        for i, c in enumerate(self.tables[k]):
-            if x < c: return i
-            x -= c
-        return -1
-    
-    def prob(self, k): # total prob for dish k
-        w = self.alpha * self.base.prob(k) + self.ncustomers.get(k, 0)
-        return w / (self.alpha + self.total_customers)
-
-    def log_likelihood(self, full=False):
-        ll = (math.lgamma(self.alpha) - math.lgamma(self.alpha + self.total_customers)
-                + sum(math.lgamma(c) for tables in self.tables.itervalues() for c in tables)
-                + self.ntables * math.log(self.alpha))
-        if full:
-            ll += self.base.log_likelihood(full=True) + self.prior.log_likelihood()
-        return ll
-
-    def __repr__(self):
-        return ('DP(alpha={self.alpha}, '
                 '#customers={self.total_customers}, #tables={self.ntables}, '
                 '#dishes={V}, Base={self.base})').format(self=self, V=len(self.tables))

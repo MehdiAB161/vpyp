@@ -2,6 +2,7 @@ import logging
 from pyp import PYP
 from prior import PYPPrior
 
+
 class BackoffBase:
     def __init__(self, backoff, ctx):
         self.backoff = backoff
@@ -15,6 +16,7 @@ class BackoffBase:
 
     def prob(self, k):
         return self.backoff.prob(self.ctx, k)
+
 
 class PYPLM:
     def __init__(self, order, initial_base):
