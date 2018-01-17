@@ -1,5 +1,7 @@
 import numpy as np
 from corpus import ngrams
+import os
+import errno
 
 
 def sample_multinomial(n, dist):
@@ -31,3 +33,15 @@ def decrement_word_sentence(model, sentence):
 
 def random_tags(corpus, n_tags):
     return [[(np.random.randint(1, n_tags + 1), word) for word in sentence] for sentence in corpus]
+
+
+def write_to_file(filename, data) :
+    if not os.path.exists(os.path.dirname(filename)):
+        try:
+            os.makedirs(os.path.dirname(filename))
+        except OSError as exc:  # Guard against race condition
+            if exc.errno != errno.EEXIST:
+                raise
+
+    with open(filename, "w") as f:
+        f.write(str(data))

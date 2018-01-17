@@ -8,8 +8,11 @@ from joblib import Parallel, delayed
 
 class Particle:
     def __init__(self, tag_model, word_model, sentence, n_tags):
-        self.tag_model = deepcopy(tag_model)
-        self.word_model = deepcopy(word_model)
+        # self.tag_model = deepcopy(tag_model)
+        # self.word_model = deepcopy(word_model)
+
+        self.tag_model = tag_model
+        self.word_model = word_model
 
         self.tag_assignments = []
         self.sentence = sentence
@@ -76,8 +79,8 @@ class Particle:
 
 
 class Particles:
-    def __init__(self, n_particles, tag_model, word_model, sentence, n_tags):
-        self.particles = [Particle(tag_model, word_model, sentence, n_tags) for _ in range(n_particles)]
+    def __init__(self, n_particles, tag_models, word_models, sentence, n_tags):
+        self.particles = [Particle(tag_models[i], word_models[i], sentence, n_tags) for i in range(n_particles)]
         # self.particles = Parallel(n_jobs=4)(delayed(Particle)(tag_model, word_model, sentence, n_tags)
         #                                     for _ in range(n_particles))
         self.n_particles = n_particles
