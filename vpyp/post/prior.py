@@ -3,18 +3,15 @@ import random
 
 # Probability density functions
 
-
 def beta_pdf(alpha, beta, x):
     return (math.lgamma(alpha + beta) - math.lgamma(alpha) - math.lgamma(beta)
             + (alpha - 1)  * math.log(x) + (beta - 1) * math.log(1 - x))
-
 
 def gamma_pdf(shape, scale, x):
     return (- shape * math.log(scale) - math.lgamma(shape) 
             + (shape - 1) * math.log(x) - x/scale)
 
 # Hyperparameter Priors
-
 
 class SampledPrior(object):
     def __init__(self):
@@ -45,7 +42,6 @@ class SampledPrior(object):
                 self.parameters = old_parameters # revert parameters
         return stats
 
-
 class GammaPrior(SampledPrior):
     """Prior for parameters with [0, +inf[ range"""
     def __init__(self, shape, scale, x):
@@ -56,7 +52,7 @@ class GammaPrior(SampledPrior):
 
     def log_likelihood(self):
         return gamma_pdf(self.shape, self.scale, self.x)
-
+    
     def get_parameters(self):
         return (self.x,)
 
@@ -77,7 +73,6 @@ class GammaPrior(SampledPrior):
         return ('GammaPrior(x={self.x} ~ Gamma({self.shape}, {self.scale}) | '
                 'nties={nties})').format(self=self, nties=len(self.tied_distributions))
 
-
 class BetaPrior(SampledPrior):
     """Prior for parameters with [0, 1] range"""
     def __init__(self, alpha, beta, x):
@@ -88,7 +83,7 @@ class BetaPrior(SampledPrior):
 
     def log_likelihood(self):
         return beta_pdf(self.alpha, self.beta, self.x)
-
+    
     def get_parameters(self):
         return (self.x,)
 
@@ -108,7 +103,6 @@ class BetaPrior(SampledPrior):
     def __repr__(self):
         return ('BetaPrior(x={self.x} ~ Beta({self.alpha}, {self.beta}) | '
                 'nties={nties})').format(self=self, nties=len(self.tied_distributions))
-
 
 class PYPPrior(SampledPrior):
     """Prior for PYP parameters (discount: ]0, 1]; strength: [-discount, +inf[)"""
@@ -151,9 +145,7 @@ class PYPPrior(SampledPrior):
                 'strength + discount ~ Gamma({self.y_prior.shape}, {self.y_prior.scale}) | '
                 'nties={nties})').format(self=self, nties=len(self.tied_distributions))
 
-
 import operator
-
 
 class stuple(tuple):
     def __add__(self, other):

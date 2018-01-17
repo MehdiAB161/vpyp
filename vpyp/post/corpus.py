@@ -66,12 +66,6 @@ class Corpus:
     def __len__(self):
         return len(self.segments)
 
-    def random_tags(self, n_tags):
-        self.segments = [[(np.random.randint(0, n_tags), word) for word in sentence] for sentence in self.segments]
-
-    def update_tags(self):
-        pass
-
 
 def ngrams(sentence, order):
     ngram = deque(maxlen=order)
