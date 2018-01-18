@@ -1,8 +1,9 @@
 import argparse
 import logging
 import math
-import cPickle
-from ..corpus import read_corpus, ngrams
+import pickle
+from vpyp.corpus import read_corpus, ngrams
+
 
 def print_ppl(model, corpus):
     n_sentences = len(corpus)
@@ -20,6 +21,7 @@ def print_ppl(model, corpus):
     logging.info('Sentences: %d\tWords: %d\tOOVs: %d', n_sentences, n_words, n_oovs)
     logging.info('LL: %.0f\tppl: %.3f', ll, ppl)
 
+
 def main():
     logging.basicConfig(level=logging.INFO, format='%(message)s')
 
@@ -31,7 +33,7 @@ def main():
 
     logging.info('Loading model')
     with open(args.model) as model_file:
-        model = cPickle.load(model_file)
+        model = pickle.load(model_file)
 
     logging.info('Reading evaluation corpus')
     with open(args.test) as test:
@@ -39,6 +41,7 @@ def main():
 
     logging.info('Computing perplexity')
     print_ppl(model, test_corpus)
+
 
 if __name__ == '__main__':
     main()

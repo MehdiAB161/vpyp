@@ -12,10 +12,22 @@ from tools import write_to_file
 from parameters import args
 
 now = strftime("%c")
-log_dir = "logs/" + now.format(time())
+log_dir = "logs/"
 write_to_file(filename=log_dir + '/args', data=args)
 
-logging.basicConfig(level=logging.INFO, format='%(message)s')
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
+                    datefmt='%a, %d %b %Y %H:%M:%S',
+                    filename='./logs/post.log',
+                    filemode='w',
+)
+
+console = logging.StreamHandler()
+console.setLevel(logging.INFO)
+formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
+console.setFormatter(formatter)
+logging.getLogger('').addHandler(console)
+
 
 logging.info('Reading training corpus')
 vocabulary = Vocabulary()
