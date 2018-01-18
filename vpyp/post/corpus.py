@@ -52,7 +52,7 @@ class Vocabulary:
 
 
 def read_corpus(stream, vocabulary):
-    return [[vocabulary[word] for word in seg.decode('utf8').split()] for seg in stream]
+    return [[vocabulary[word] for word in seg.decode('utf8').lower().split()] for seg in stream]
 
 
 class Corpus:
