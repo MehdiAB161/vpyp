@@ -2,8 +2,9 @@ import argparse
 import logging
 import math
 import sys
-import cPickle
-from ..corpus import START, STOP
+import pickle
+
+from vpyp.corpus import START, STOP
 
 def print_arpa(model, vocabulary):
     vocabulary |= {START, STOP}
@@ -74,7 +75,7 @@ def main():
 
     logging.info('Loading model')
     with open(args.model) as model_file:
-        model = cPickle.load(model_file)
+        model = pickle.load(model_file)
 
     if args.vocab:
         logging.info('Reading vocabulary')
@@ -86,6 +87,7 @@ def main():
     logging.info('Vocabulary size: %d', len(vocabulary))
 
     print_arpa(model, vocabulary)
+
 
 if __name__ == '__main__':
     main()

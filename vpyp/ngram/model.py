@@ -1,6 +1,7 @@
 import logging
-from ..pyp import PYP
-from ..prior import PYPPrior
+
+from vpyp.pyp import PYP
+from vpyp.prior import PYPPrior
 
 class BackoffBase:
     def __init__(self, backoff, ctx):
