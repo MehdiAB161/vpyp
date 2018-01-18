@@ -1,13 +1,14 @@
 from tools import sample_multinomial
 from corpus import ngrams
 
-from copy import deepcopy
-import numpy as np
-from joblib import Parallel, delayed
+# TODO : add particle 0
 
 
 class Particle:
-    def __init__(self, tag_model, word_model, sentence, n_tags):
+    def __init__(self, tag_model, word_model, sentence, n_tags, model_type):
+        """"
+        model_type : "word" or "sentence"
+        """
         # self.tag_model = deepcopy(tag_model)
         # self.word_model = deepcopy(word_model)
 
@@ -23,9 +24,15 @@ class Particle:
 
         self.n_words = len(sentence)
         self.n_tags = n_tags
+        self.model_type = model_type
 
+    # TODO : Check if there is an underflow
     def proposal_prob(self, tag):
-        return self.tag_model.prob(ctx=self.context(), w=tag) * self.word_model.prob(ctx=tag, w=self.word())
+        if self.model_type == "sentence":
+            return self.tag_model.prob(ctx=self.context(), w=tag) * self.word_model.prob(ctx=tag, w=self.word())
+        if self.model_type == "word":
+            pass
+        # TODO : add word proposal wor the word type model
 
     def proposal_distribution(self):
         proposal_distribution = [self.proposal_prob(t) for t in range(self.n_tags)]
@@ -33,7 +40,8 @@ class Particle:
                 for proposal_prob in proposal_distribution]
         return proposal_distribution
 
-    def pick_tag(self, proposal_distribution):
+    @staticmethod
+    def pick_tag(proposal_distribution):
         return sample_multinomial(n=1, dist=proposal_distribution)[0]
 
     def increment_tables(self, tag):
@@ -50,7 +58,9 @@ class Particle:
         return self.words[self.state]
 
     def assign_tag(self, tag):
-        self.increment_tables(tag)
+        # Update the seating arrangements for the word type model only
+        if self.model_type == "word":
+            self.increment_tables(tag)
         self.tag_assignments.append(tag)
 
     def compute_weight(self, proposal_prob, tag):
@@ -63,6 +73,8 @@ class Particle:
 
         # Pick a new tag according to the proposal and assign it
         tag = self.pick_tag(proposal_dist)
+
+        # Update the tags
         self.assign_tag(tag)
 
         # Update the particle weight
@@ -79,8 +91,15 @@ class Particle:
 
 
 class Particles:
-    def __init__(self, n_particles, tag_models, word_models, sentence, n_tags):
-        self.particles = [Particle(tag_models[i], word_models[i], sentence, n_tags) for i in range(n_particles)]
+    def __init__(self, n_particles, tag_models, word_models, sentence, n_tags, model_type):
+
+        if model_type == "sentence":
+            # The seats are updated until all the sequence is picked, only a model is necessary for all the particles
+            self.particles = [Particle(tag_models, word_models, sentence, n_tags, model_type)
+                              for _ in range(n_particles)]
+        if model_type == "word":
+            self.particles = [Particle(tag_models[i], word_models[i], sentence, n_tags, model_type)
+                              for i in range(n_particles)]
         # self.particles = Parallel(n_jobs=4)(delayed(Particle)(tag_model, word_model, sentence, n_tags)
         #                                     for _ in range(n_particles))
         self.n_particles = n_particles
@@ -98,4 +117,4 @@ class Particles:
         for particle in self.particles:
             particle.particle_filter()
         filtered_particle = self.sample_particle()
-        return filtered_particle.tag_assignments
+        return filtered_particle

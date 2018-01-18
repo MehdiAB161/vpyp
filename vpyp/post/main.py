@@ -22,8 +22,11 @@ vocabulary = Vocabulary()
 with open(args["train_file"]) as train:
     corpus = read_corpus(train, vocabulary)
 
-tag_models = [PYPLM(args["tag_order"], initial_base=Uniform(args["n_tags"])) for _ in range(args["n_particles"])]
-word_models = [PYPLM(args["word_order"], initial_base=Uniform(len(vocabulary))) for _ in range(args["n_particles"])]
+# tag_models = [PYPLM(args["tag_order"], initial_base=Uniform(args["n_tags"])) for _ in range(args["n_particles"])]
+# word_models = [PYPLM(args["word_order"], initial_base=Uniform(len(vocabulary))) for _ in range(args["n_particles"])]
+
+tag_models = [PYPLM(args["tag_order"], initial_base=Uniform(args["n_tags"]))]
+word_models = [PYPLM(args["word_order"], initial_base=Uniform(len(vocabulary)))]
 
 logging.info('Training model of order %d', args["tag_order"])
 
